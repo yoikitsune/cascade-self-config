@@ -1,0 +1,345 @@
+---
+name: cascade-self-config
+description: Auto-configuration de Cascade pour améliorer son comportement. Analyser et corriger des erreurs ou optimiser des méthodes, diagnostiquer les causes, et créer/modifier les artifacts .devin (rules, skills, AGENTS.md) pour éviter la récurrence ou adopter de meilleures pratiques. Utiliser quand l'utilisateur dit "auto-configure-toi", "améliore ta config", "tu as fait une erreur", "tu pourrais faire mieux", ou après une session où Cascade a été imprécis ou peu efficace.
+---
+
+# Cascade Self-Config
+
+## Objectif
+
+Permettre à Cascade d'**analyser et d'améliorer son propre comportement** en modifiant sa configuration `.devin/` — que ce soit pour corriger des erreurs passées ou pour adopter de meilleures méthodes de travail.
+
+## Architecture hybride de ce skill
+
+Ce skill est installé **globalement** dans `~/.codeium/windsurf/skills/cascade-self-config/`. Il contient :
+- Le `SKILL.md` (procédure, identique pour tous les projets)
+- Des **références génériques** (guides rules/skills/agents-md) dans `references/`
+
+À chaque invocation dans un projet, il utilise/crée des **références projet-spécifiques** dans `<projet>/.devin/skills/cascade-self-config/references/` :
+- `diagnostic-catalog.md` — catalogue des erreurs diagnostiquées pour ce projet
+- `project-tooling.md` — outils CLI, MCP, navigateur spécifiques à ce projet
+
+Ces fichiers projet permettent de accumuler de la mémoire par projet sans polluer les autres.
+
+## Quand utiliser ce skill
+
+- L'utilisateur signale une **erreur** de fonctionnement de Cascade
+- L'utilisateur suggère une **amélioration** de méthode ("tu pourrais faire X plus efficacement", "utilise plutôt tel outil dans ce cas")
+- L'utilisateur dit "auto-configure-toi", "améliore ta config", "tu as fait une erreur", "tu pourrais faire mieux"
+- Après une session de débogage où Cascade a gaspillé des étapes (mauvaise syntaxe CLI, mauvais outil, manque de prérequis)
+- L'utilisateur fournit une conversation passée à analyser
+- L'utilisateur veut que Cascade adopte une nouvelle pratique de travail
+
+## Ce que ce skill N'EST PAS
+
+- ❌ Ce skill **n'est pas** un outil de résumé de conversation
+- ❌ Ce skill **n'est pas** un outil de recommandations projet (logging, code, architecture)
+- ❌ Ce skill **ne demande pas** à l'utilisateur quoi faire — il diagnostique, propose, puis agit après validation
+- ❌ Ce skill **n'est pas** pour créer de nouvelles automatisations projet → utiliser `@cascade-self-automation` à la place
+- ✅ Ce skill analyse **le comportement de Cascade lui-même** (erreurs ou améliorations) et crée des corrections dans `.devin/`
+
+> Si tu te surprends à résumer la conversation ou à donner des recommandations sur le projet, **tu es hors-sujet**. Reviens au diagnostic du comportement de Cascade.
+
+## Procédure d'invocation attendue
+
+L'utilisateur ouvre une **nouvelle conversation dédiée** (pas dans la conversation à analyser) et fournit :
+
+1. `@cascade-self-config` — invocation du skill
+2. `@[conversation:...]` — référence de la conversation à analyser
+3. Optionnellement : une description explicite du problème observé
+
+Deux modes d'analyse :
+- **Mode explicite** : l'utilisateur a décrit le problème → se concentrer sur ce point précis
+- **Mode libre** : l'utilisateur n'a rien décrit → parcours systématique de la conversation pour identifier les erreurs de Cascade
+
+Le déroulement attendu est :
+
+```
+Phase 0  → lire la doc officielle (PREMIÈRE ACTION, avant toute analyse)
+Phase 0b → vérifier/créer les références projet-spécifiques
+Phase 1  → trajectory_search sur la conversation + diagnostic des erreurs
+Phase 2  → choix d'artifact pour chaque correction
+Phase 3  → création/modification des artifacts
+Phase 4a → rapport de diagnostic à l'utilisateur (avant action)
+    → l'utilisateur valide ou rediscute
+Phase 4b → après validation : rapport de ce qui a été créé/modifié
+Phase 5  → commit après validation explicite de l'utilisateur
+```
+
+## Phase 0 — Chargement de la documentation officielle (OBLIGATOIRE — PREMIÈRE ACTION)
+
+> ⚠️ **STOP** : Cette phase doit être exécutée **avant toute autre action**, y compris avant `trajectory_search` sur la conversation à analyser. Ne pas passer à la Phase 0b tant que les 3 URLs n'ont pas été lues.
+
+**À chaque invocation de ce skill**, lire les 3 pages de documentation officielle pour avoir une vue d'ensemble à jour du fonctionnement des outils de configuration de Cascade :
+
+1. **Memories & Rules** : `https://docs.devin.ai/desktop/cascade/memories` — **Attention : on lit ce lien pour la partie Rules UNIQUEMENT. Les Memories NE SONT PAS utilisées** dans ce skill. Les Memories sont auto-générées, non committées et non partageables. Pour le savoir durable, on utilise Rules, Skills ou AGENTS.md.
+2. **Skills** : `https://docs.devin.ai/desktop/cascade/skills`
+3. **AGENTS.md** : `https://docs.devin.ai/desktop/cascade/agents-md`
+
+Utiliser `read_url_content` pour chaque lien. Si une page n'est pas accessible ou si des informations semblent manquantes, faire une `search_web` pour parfaire les connaissances (ex: "Windsurf Cascade rules trigger modes 2026", "Windsurf skills progressive disclosure", "Windsurf AGENTS.md scoping").
+
+> **Pourquoi cette étape** : La documentation officielle peut évoluer. Les références locales dans `references/` sont un résumé, mais la source de vérité est la doc en ligne. Cette lecture garantit que les artifacts créés respectent les conventions actuelles.
+
+## Phase 0b — Vérification des références projet-spécifiques
+
+Après la Phase 0, vérifier que les fichiers projet-spécifiques existent :
+
+1. **Chercher** `<projet>/.devin/skills/cascade-self-config/references/diagnostic-catalog.md`
+   - Si absent → le créer depuis le template global `references/diagnostic-catalog-template.md`
+   - Si présent → le lire pour connaître les erreurs déjà diagnostiquées dans ce projet
+
+2. **Chercher** `<projet>/.devin/skills/cascade-self-config/references/project-tooling.md`
+   - Si absent → le créer depuis le template global `references/project-tooling-template.md`
+   - Si présent → le lire pour connaître les outils et limites de ce projet
+
+3. **Chercher** `<projet>/.devin/AGENTS.md`
+   - Si présent → le lire pour connaître l'inventaire des rules/skills/workflows existants
+
+> **Note** : Les références génériques (`rules-guide.md`, `skills-guide.md`, `agents-md-guide.md`) sont dans le répertoire global du skill et toujours disponibles. Seuls les fichiers projet-spécifiques need d'être vérifiés.
+
+## Procédure
+
+### Phase 1 — Diagnostic
+
+1. **Analyser la conversation source** : Utiliser `trajectory_search` pour récupérer le contenu de la conversation à analyser. Adapter la recherche selon le mode :
+   - **Mode explicite** : l'utilisateur a décrit le problème ou l'amélioration souhaitée → recherche ciblée
+   - **Mode libre** : l'utilisateur n'a rien décrit → recherche large puis parcours systématique pour identifier toutes les anomalies de comportement de Cascade (commandes échouées, mauvais outils utilisés, prérequis manquants, étapes gaspillées, méthodes sous-optimales)
+
+2. **Consulter le catalogue projet** : Lire `diagnostic-catalog.md` (projet) pour vérifier si des erreurs similaires ont déjà été diagnostiquées et corrigées. Éviter de recréer une correction existante.
+
+3. **Identifier le type de diagnostic** :
+   - **Diagnostic d'erreur** : quelque chose n'a pas fonctionné (commande échouée, mauvais outil, prérequis manquant, bug)
+   - **Diagnostic d'amélioration** : quelque chose a fonctionné mais pourrait être fait mieux (trop d'étapes, outil suboptimal, méthode alternative plus efficace, pratique à adopter)
+
+4. **Analyser le comportement** : Identifier précisément ce qui n'a pas fonctionné ou pourrait être amélioré dans le comportement de Cascade :
+   - Mauvaise syntaxe de commande CLI ?
+   - Mauvais outil utilisé (MCP limité, script local au lieu de navigateur) ?
+   - Manque de prérequis (credentials, index, configuration) ?
+   - Mauvaise compréhension d'une API ou d'un service ?
+   - Code de programmation erroné (null-check manquant, mauvais type) ?
+   - Trop d'étapes pour une tâche simple ?
+   - Outil suboptimal alors qu'une meilleure option existe ?
+   - Pratique non documentée qui devrait devenir systématique ?
+
+5. **Catégoriser** :
+   - `cli-syntax` : Erreur de syntaxe dans une commande CLI
+   - `tool-selection` : Mauvais choix d'outil pour la tâche
+   - `missing-prerequisite` : Prérequis d'environnement manquant
+   - `api-misuse` : Mauvaise utilisation d'une API
+   - `code-error` : Bug dans le code produit
+   - `process-gap` : Mauvaise anticipation d'un flux ou d'une intégration
+   - `efficiency` : Méthode fonctionnelle mais sous-optimale (trop d'étapes, outil suboptimal)
+   - `practice-adoption` : Nouvelle pratique à systématiser
+
+6. **Déterminer la correction** : Quelle connaissance aurait évité cette erreur ou rendu cette amélioration automatique ?
+
+### Phase 2 — Choix de l'artifact
+
+Arbre de décision :
+
+```
+La correction est-elle une contrainte comportementale courte ?
+├─ OUI → Rule
+│  ├─ S'applique toujours ? → trigger: always_on
+│  ├─ S'applique selon contexte ? → trigger: model_decision
+│  ├─ S'applique à des fichiers spécifiques ? → trigger: glob (avec globs: pattern)
+│  └─ Activation manuelle uniquement ? → trigger: manual
+│
+├─ La correction nécessite-t-elle une procédure multi-étapes ?
+│  └─ OUI → Skill (avec fichiers supports si besoin)
+│
+├─ La correction est-elle une procédure réutilisable invoquée par slash-command ?
+│  └─ OUI → Workflow (dans .devin/workflows/)
+│
+├─ La correction est-elle spécifique à un répertoire ?
+│  └─ OUI → AGENTS.md dans ce répertoire
+│
+└─ La correction est-elle un fait ponctuel ?
+   └─ Memory (via create_memory tool)
+```
+
+**Règle d'or** : Préférer `model_decision` à `always_on` pour économiser le contexte permanent. Une rule `always_on` ne se justifie que si l'erreur peut se reproduire à tout moment sans signal contextuel.
+
+### Phase 3 — Création de l'artifact
+
+1. **Consulter les références génériques** (dans le répertoire global du skill) :
+   - `references/rules-guide.md` — syntaxe et modes d'activation des rules
+   - `references/skills-guide.md` — structure, progressive disclosure, best practices
+   - `references/agents-md-guide.md` — scoping et format AGENTS.md
+
+2. **Consulter les références projet** (dans `<projet>/.devin/skills/cascade-self-config/references/`) :
+   - `project-tooling.md` — outils disponibles et leurs limites pour ce projet
+   - `diagnostic-catalog.md` — erreurs déjà diagnostiquées dans ce projet
+
+3. **Vérifier l'existence** : Avant de créer, vérifier si une rule/skill similaire existe déjà
+   - Lister `.devin/rules/`
+   - Lister `.devin/skills/`
+   - Lister `.devin/workflows/`
+   - Si similaire → **mettre à jour** l'artifact existant plutôt qu'en créer un nouveau
+
+   > **Règle** : Tous les artifacts vont dans `.devin/`. Le dossier `.windsurf/` est déprécié (legacy fallback uniquement). Ne jamais créer de nouvel artifact dans `.windsurf/`.
+
+4. **Créer/modifier l'artifact** avec le bon format :
+   - Rule : frontmatter `trigger` + `description` (si model_decision/glob), contenu concis
+   - Skill : frontmatter `name` + `description`, procédure claire, fichiers supports
+   - AGENTS.md : markdown simple, pas de frontmatter, instructions ciblées
+   - Workflow : fichier `.md` dans `.devin/workflows/` avec frontmatter `description`
+
+   > **Règles de formatage SKILL.md critiques** (violation = skill non détecté par Cascade) :
+   > - Frontmatter YAML avec **exactement 3 tirets** `---` (PAS 4 tirets `----`)
+   > - Le frontmatter doit être **le tout premier contenu du fichier** — aucun titre ni commentaire avant
+   > - La **description ne doit pas contenir `: ` (colon+espace)** — cela casse le parsing YAML. Remplacer par ` -` ou mettre la valeur entre guillemets
+   > - Vérifier après création : `head -1 SKILL.md` doit afficher `---`
+
+5. **Respecter les limites et best practices** :
+   - Rule : simple, concise, spécifique. Pas de règles génériques (déjà dans le training data). Utiliser bullet points et markdown. < 12 000 caractères
+   - Skill SKILL.md : < 500 lignes. Description claire pour l'invocation automatique
+   - AGENTS.md : concis, focalisé sur le répertoire, pas de redondance avec les parents
+   - Utiliser des XML tags pour grouper des règles similaires dans une rule
+
+### Phase 4a — Rapport de diagnostic (avant action)
+
+Avant de créer ou modifier des artifacts, présenter un rapport de diagnostic à l'utilisateur pour validation :
+
+```
+🔍 Diagnostic des erreurs de Cascade
+
+Conversation analysée : [nom/référence]
+
+Erreurs identifiées :
+1. [catégorie] — [description courte] → correction proposée : [type d'artifact]
+2. [catégorie] — [description courte] → correction proposée : [type d'artifact]
+...
+
+J'ai lu la doc officielle (Phase 0) et vérifié les artifacts existants.
+Je propose de créer/modifier les fichiers suivants :
+- [chemin] (nouveau/modifié)
+- [chemin] (nouveau/modifié)
+
+Valides-tu ces modifications ?
+```
+
+> **Ne crée aucun artifact tant que l'utilisateur n'a pas validé.** Si l'utilisateur rediscute ou ajuste, adapter les propositions puis re-présenter.
+
+### Phase 4b — Création et rapport de validation (après validation)
+
+Après validation explicite de l'utilisateur :
+
+1. **Créer/modifier les artifacts** (Phase 3)
+
+2. **Vérifier la non-surcharge** :
+   - Compter les rules `always_on` — trop = contexte gonflé
+   - Si > 6 rules `always_on`, envisager de convertir certaines en `model_decision`
+
+3. **Vérifier la non-duplication** :
+   - La nouvelle rule ne duplique-t-elle pas une existante ?
+   - Le nouveau skill ne chevauche-t-il pas un existant ?
+
+4. **Mettre à jour l'inventaire** :
+   - Si nouveau skill → ajouter à `.devin/AGENTS.md` (section Inventory des Skills)
+   - Si nouvelle rule → ajouter à `.devin/AGENTS.md` (section Inventory des Rules)
+   - Si nouveau workflow → ajouter à `.devin/AGENTS.md` (section Inventory des Workflows)
+
+5. **Mettre à jour le catalogue projet** : Ajouter les nouvelles entrées ERR-XXX dans `<projet>/.devin/skills/cascade-self-config/references/diagnostic-catalog.md`
+
+6. **Présenter le rapport de validation** :
+   ```
+   ✅ Auto-configuration appliquée
+
+   Erreur diagnostiquée : [catégorie] — [description]
+   Correction créée : [type d'artifact] → [chemin]
+   Mode d'activation : [trigger]
+   Impact contexte : [always_on/model_decision/glob/manual]
+
+   Fichiers modifiés :
+   - [chemin] (créé/modifié)
+   - [chemin] (créé/modifié)
+
+   Prêt à commiter. Veux-tu que je commite ces changements ?
+   ```
+
+### Phase 5 — Commit (après validation explicite)
+
+> Ne commiter **qu'après validation explicite** de l'utilisateur sur le rapport de validation (Phase 4b).
+
+1. **Ne commiter QUE les fichiers `.devin/` modifiés** dans le cadre de cette auto-configuration :
+   - Rules (`.devin/rules/*.md`)
+   - Skills (`.devin/skills/*/SKILL.md` et `references/`)
+   - Workflows (`.devin/workflows/*.md`)
+   - AGENTS.md (`.devin/AGENTS.md`)
+   - References projet de cascade-self-config
+2. **Ne jamais commiter** des fichiers de code applicatif (`lib/`, `functions/`, `test/`, etc.) dans ce workflow
+3. **Message de commit** : `chore(cascade-config): [description courte de la correction]`
+4. **Un seul commit** regroupant toutes les modifications de config liées à cette session
+
+## Checklist avant de répondre à l'utilisateur
+
+- [ ] J'ai lu les 3 URLs de documentation (Phase 0) — **avant toute autre action**
+- [ ] J'ai vérifié/créé les références projet-spécifiques (Phase 0b)
+- [ ] J'ai fait `trajectory_search` sur la conversation source (Phase 1)
+- [ ] J'ai identifié chaque erreur de Cascade dans la conversation
+- [ ] J'ai catégorisé chaque erreur (cli-syntax, tool-selection, etc.)
+- [ ] J'ai choisi un type d'artifact pour chaque correction (Phase 2)
+- [ ] J'ai présenté le rapport de diagnostic et attendu la validation (Phase 4a)
+- [ ] Après validation : j'ai créé/modifié les artifacts (Phase 3)
+- [ ] J'ai présenté le rapport de validation (Phase 4b)
+- [ ] J'ai attendu la validation de commit avant de commiter (Phase 5)
+
+Si une case n'est pas cochée, **ne réponds pas encore** — complète l'étape manquante.
+
+## Exemple de bon vs mauvais déroulement
+
+> **Bon comportement** :
+> 1. Lit les 3 URLs de doc (Phase 0)
+> 2. Vérifie/crée les références projet (Phase 0b)
+> 3. `trajectory_search` sur la conversation (Phase 1)
+> 4. "J'ai identifié 3 erreurs : ERR-A (process-gap), ERR-B (missing-prerequisite), ERR-C (cli-syntax)"
+> 5. Propose des corrections (Phase 2) → présente le rapport de diagnostic (Phase 4a)
+> 6. L'utilisateur valide → crée les artifacts (Phase 3) → rapport de validation (Phase 4b)
+> 7. L'utilisateur valide le commit → commit (Phase 5)
+
+> **Mauvais comportement — NE PAS FAIRE** :
+> 1. Saute la Phase 0 (doc non lue)
+> 2. Résume la conversation au lieu de diagnostiquer les erreurs de Cascade
+> 3. Donne des recommandations sur le projet (logging, code, architecture)
+> 4. Demande "Quelles actions veux-tu que je mette en œuvre ?" au lieu de proposer un diagnostic
+> 5. Crée des artifacts sans validation utilisateur
+
+## Catalogue d'erreurs connues
+
+Consulter `<projet>/.devin/skills/cascade-self-config/references/diagnostic-catalog.md` pour le catalogue des erreurs déjà identifiées dans ce projet et leurs corrections. Ce catalogue s'enrichit à chaque utilisation du skill.
+
+## Outils disponibles pour le diagnostic
+
+Consulter `<projet>/.devin/skills/cascade-self-config/references/project-tooling.md` pour la liste complète des outils disponibles (CLI, MCP, navigateur) et leurs limites connues pour ce projet.
+
+## Fichiers de référence
+
+### Références génériques (globales, dans le répertoire du skill)
+
+| Fichier | Contenu | Quand le charger |
+|---|---|---|
+| `references/rules-guide.md` | Syntaxe, modes, exemples de rules | Avant de créer/modifier une rule |
+| `references/skills-guide.md` | Structure, progressive disclosure, best practices | Avant de créer/modifier un skill |
+| `references/agents-md-guide.md` | Scoping, format, comparaison avec rules | Avant de créer/modifier un AGENTS.md |
+
+### Références projet-spécifiques (dans `<projet>/.devin/skills/cascade-self-config/references/`)
+
+| Fichier | Contenu | Quand le charger |
+|---|---|---|
+| `project-tooling.md` | Outils CLI, MCP, navigateur + limites de ce projet | Pour vérifier les capacités d'un outil |
+| `diagnostic-catalog.md` | Erreurs connues et corrections appliquées dans ce projet | Pour éviter de réinventer une correction |
+
+### Templates (globaux, pour création initiale)
+
+| Fichier | Contenu |
+|---|---|
+| `references/project-tooling-template.md` | Template pour créer `project-tooling.md` dans un nouveau projet |
+| `references/diagnostic-catalog-template.md` | Template pour créer `diagnostic-catalog.md` dans un nouveau projet |
+
+## Différence avec cascade-self-automation
+
+- **cascade-self-config** : Modifier comment **Cascade lui-même** fonctionne — corriger des erreurs de comportement ou adopter de meilleures pratiques. Artifacts : rules, mises à jour de skills/AGENTS existants. Déclencheur : analyse d'une conversation ou signalement utilisateur.
+- **cascade-self-automation** : Créer de **nouvelles** automatisations pour des **tâches du projet** (nouveaux skills, workflows, scripts). Déclencheur : demande directe d'automatisation d'une tâche.
+
+En résumé : `self-config` = "change la façon dont **tu** travailles" / `self-automation` = "crée un outil pour **le projet**"

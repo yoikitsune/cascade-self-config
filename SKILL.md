@@ -61,7 +61,7 @@ Le déroulement attendu est :
 ```
 Phase 0  → lire la doc officielle (PREMIÈRE ACTION, avant toute analyse)
 Phase 0b → vérifier/créer les références projet-spécifiques
-Phase 1  → trajectory_search sur la conversation + diagnostic des erreurs
+Phase 1  → dcr (conversation retriever) sur la conversation + diagnostic des erreurs
 Phase 2  → choix d'artifact pour chaque correction
 Phase 3  → création/modification des artifacts
 Phase 4a → rapport de diagnostic à l'utilisateur (avant action)
@@ -72,7 +72,7 @@ Phase 5  → commit après validation explicite de l'utilisateur
 
 ## Phase 0 — Chargement de la documentation officielle (OBLIGATOIRE — PREMIÈRE ACTION)
 
-> ⚠️ **STOP** : Cette phase doit être exécutée **avant toute autre action**, y compris avant `trajectory_search` sur la conversation à analyser. Ne pas passer à la Phase 0b tant que les 3 URLs n'ont pas été lues.
+> ⚠️ **STOP** : Cette phase doit être exécutée **avant toute autre action**, y compris avant toute recherche avec `dcr` sur la conversation à analyser. Ne pas passer à la Phase 0b tant que les 3 URLs n'ont pas été lues.
 
 **À chaque invocation de ce skill**, lire les 3 pages de documentation officielle pour avoir une vue d'ensemble à jour du fonctionnement des outils de configuration de Cascade :
 
@@ -105,9 +105,10 @@ Après la Phase 0, vérifier que les fichiers projet-spécifiques existent :
 
 ### Phase 1 — Diagnostic
 
-1. **Analyser la conversation source** : Utiliser `trajectory_search` pour récupérer le contenu de la conversation à analyser. Adapter la recherche selon le mode :
-   - **Mode explicite** : l'utilisateur a décrit le problème ou l'amélioration souhaitée → recherche ciblée
-   - **Mode libre** : l'utilisateur n'a rien décrit → recherche large puis parcours systématique pour identifier toutes les anomalies de comportement de Cascade (commandes échouées, mauvais outils utilisés, prérequis manquants, étapes gaspillées, méthodes sous-optimales)
+1. **Analyser la conversation source** : Utiliser `dcr` (Devin Conversations Retriever) pour récupérer et analyser la conversation. Consulter `references/dcr-diagnostic-patterns.md` pour les procédures détaillées. Adapter selon le mode :
+   - **Mode explicite** : l'utilisateur a décrit le problème ou l'amélioration souhaitée → `dcr search "<mot-clé>"` pour recherche ciblée, puis `dcr show <id>` pour la conversation complète
+   - **Mode libre** : l'utilisateur n'a rien décrit → `dcr sync` puis `dcr list -l 10` pour identifier la conversation, puis `dcr show <id>` ou `dcr export <id>` pour parcours systématique et identification de toutes les anomalies (commandes échouées, mauvais outils utilisés, prérequis manquants, étapes gaspillées, méthodes sous-optimales)
+   - **Fallback** : si `dcr` n'est pas disponible ou la conversation n'est pas dans la DB, utiliser `trajectory_search`
 
 2. **Consulter le catalogue projet** : Lire `diagnostic-catalog.md` (projet) pour vérifier si des erreurs similaires ont déjà été diagnostiquées et corrigées. Éviter de recréer une correction existante.
 
@@ -280,7 +281,7 @@ Après validation explicite de l'utilisateur :
 
 - [ ] J'ai lu les 3 URLs de documentation (Phase 0) — **avant toute autre action**
 - [ ] J'ai vérifié/créé les références projet-spécifiques (Phase 0b)
-- [ ] J'ai fait `trajectory_search` sur la conversation source (Phase 1)
+- [ ] J'ai utilisé `dcr` (ou `trajectory_search` en fallback) pour analyser la conversation source (Phase 1)
 - [ ] J'ai identifié chaque erreur de Cascade dans la conversation
 - [ ] J'ai catégorisé chaque erreur (cli-syntax, tool-selection, etc.)
 - [ ] J'ai choisi un type d'artifact pour chaque correction (Phase 2)
@@ -296,7 +297,7 @@ Si une case n'est pas cochée, **ne réponds pas encore** — complète l'étape
 > **Bon comportement** :
 > 1. Lit les 3 URLs de doc (Phase 0)
 > 2. Vérifie/crée les références projet (Phase 0b)
-> 3. `trajectory_search` sur la conversation (Phase 1)
+> 3. `dcr show` / `dcr export` sur la conversation (Phase 1) — voir `references/dcr-diagnostic-patterns.md`
 > 4. "J'ai identifié 3 erreurs : ERR-A (process-gap), ERR-B (missing-prerequisite), ERR-C (cli-syntax)"
 > 5. Propose des corrections (Phase 2) → présente le rapport de diagnostic (Phase 4a)
 > 6. L'utilisateur valide → crée les artifacts (Phase 3) → rapport de validation (Phase 4b)
@@ -326,6 +327,7 @@ Consulter `<projet>/.devin/skills/cascade-self-config/references/project-tooling
 | `references/rules-guide.md` | Syntaxe, modes, exemples de rules | Avant de créer/modifier une rule |
 | `references/skills-guide.md` | Structure, progressive disclosure, best practices | Avant de créer/modifier un skill |
 | `references/agents-md-guide.md` | Scoping, format, comparaison avec rules | Avant de créer/modifier un AGENTS.md |
+| `references/dcr-diagnostic-patterns.md` | Procédures dcr pour le diagnostic Cascade (sync, search, show, export, compare) | Pendant la Phase 1 — diagnostic de conversation |
 
 ### Références projet-spécifiques (dans `<projet>/.devin/skills/cascade-self-config/references/`)
 

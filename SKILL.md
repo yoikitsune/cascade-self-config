@@ -11,7 +11,11 @@ Permettre à Cascade d'**analyser et d'améliorer son propre comportement** en m
 
 ## Architecture hybride de ce skill
 
-Ce skill est installé **globalement** dans `~/.codeium/windsurf/skills/cascade-self-config/`. Il contient :
+Ce skill est installé **globalement** dans le dossier des skills utilisateur. Le chemin dépend de l'OS :
+- **Linux/macOS** : `~/.codeium/windsurf/skills/cascade-self-config/`
+- **Windows** : `%USERPROFILE%\.codeium\windsurf\skills\cascade-self-config\` (ex: `C:\Users\<username>\.codeium\windsurf\skills\cascade-self-config\`)
+
+Il contient :
 - Le `SKILL.md` (procédure, identique pour tous les projets)
 - Des **références génériques** (guides rules/skills/agents-md) dans `references/`
 
@@ -189,7 +193,7 @@ La correction est-elle une contrainte comportementale courte ?
    > - Frontmatter YAML avec **exactement 3 tirets** `---` (PAS 4 tirets `----`)
    > - Le frontmatter doit être **le tout premier contenu du fichier** — aucun titre ni commentaire avant
    > - La **description ne doit pas contenir `: ` (colon+espace)** — cela casse le parsing YAML. Remplacer par ` -` ou mettre la valeur entre guillemets
-   > - Vérifier après création : `head -1 SKILL.md` doit afficher `---`
+   > - Vérifier après création : `head -1 SKILL.md` (Linux/macOS) ou `Get-Content SKILL.md -TotalCount 1` (Windows PowerShell) doit afficher `---`
 
 5. **Respecter les limites et best practices** :
    - Rule : simple, concise, spécifique. Pas de règles génériques (déjà dans le training data). Utiliser bullet points et markdown. < 12 000 caractères

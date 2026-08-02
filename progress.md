@@ -9,16 +9,16 @@ Le projet adopte le pattern de distribution par symlinks formalisé dans l'ADR-0
 ## Ce qui est fait
 
 - [x] **Phase 2 — Documentation projet** : `AGENTS.md`, `docs/index.md`, `docs/decisions/0001-adopt-adr-0007-symlink-distribution.md`, `progress.md` créés, `TODO.md` nettoyé
+- [x] **Phase 1 — Restructuration selon ADR-0007** : skill déplacé dans `.devin/skills/cascade-self-config/`, `scripts/install-skills.{sh,ps1}` créés, `global_rules.md` supprimé, installation globale migrée (copie stale → symlink validé)
 - [x] Intégration `dcr` dans le skill (commit `232cdb6`) — Phase 1 du SKILL.md utilise `dcr` pour l'analyse de conversations
 - [x] Support Windows dans le SKILL.md (commit `6084446`) — chemins et commandes PowerShell
 
 ## Ce qui est en cours
 
-- [ ] **Phase 1 — Restructuration selon ADR-0007** : déplacer le skill dans `.devin/skills/`, créer `scripts/install-skills.{sh,ps1}`, supprimer `global_rules.md`, migrer l'installation globale (copie stale → symlink)
+- [ ] **Phase 3 — Mise à jour du SKILL.md** : section "Architecture hybride" réécrite pour le modèle symlink, prérequis `dcr` explicite, suppression de la référence à `cascade-self-automation` (skill inexistant), mise à jour de `references/dcr-diagnostic-patterns.md`
 
 ## Ce qui est prévu
 
-- [ ] **Phase 3 — Mise à jour du SKILL.md** : section "Architecture hybride" réécrite pour le modèle symlink, prérequis `dcr` explicite, suppression de la référence à `cascade-self-automation` (skill inexistant), mise à jour de `references/dcr-diagnostic-patterns.md`
 - [ ] **Phase 4 — Test et validation** : test d'installation, test de mise à jour live, commit final
 
 ## Ce qui est bloqué

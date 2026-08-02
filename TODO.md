@@ -1,15 +1,15 @@
-# TODO — cascade-self-config & DCR integration
+# TODO — cascade-self-config
 
-> Tâches en attente, hors code, à discuter et planifier ultérieurement.
+> Tâches différées, hors scope courant. Pour le statut live du projet, voir `progress.md`.
 
-## Déploiement & Distribution
+## Installation & Distribution
 
-- [ ] **Stratégie de déploiement cascade-self-config** — Comment distribuer le skill (manuel, script d'install, symlink, git clone vers `~/.codeium/windsurf/skills/` ?). Réfléchir à :
-  - Comment garder le skill synchronisé entre le repo et l'installation locale
-  - Comment gérer les mises à jour (git pull ? script ?)
-  - Comment gérer les références projet-spécifiques (templates vs créés)
-- [ ] **Rule globale `dcr-tool-awareness` hors repo** — La Rule vit dans `~/.codeium/windsurf/memories/global_rules.md` (config utilisateur, pas dans un repo git). Réfléchir à :
-  - Faut-il la versionner dans un repo (cascade-self-config ou DCR) ?
-  - Faut-il un script d'install qui l'écrit dans `global_rules.md` ?
-  - Que faire si l'utilisateur a déjà du contenu dans `global_rules.md` (append vs overwrite) ?
-  - Comment gérer les mises à jour de la Rule sans écraser les autres rules globales
+- [ ] **Test empirique Windows de `install-skills.ps1`** — Lancer `.\scripts\install-skills.ps1` sur une machine Windows pour confirmer que Devin suit les junctions (`mklink /J`). Tâche différée — la version Linux/macOS est testée et validée.
+
+## Skills obsolètes
+
+- [ ] **Archiver `evaluateur`** — Le skill `evaluateur` (à `~/.codeium/windsurf/skills/evaluateur/`) est obsolète. À archiver : supprimer la copie globale, et si une trace historique est souhaitée, la documenter dans un ADR. Tâche différée — ne pas traiter maintenant.
+
+## Évolutions futures possibles
+
+- [ ] **Réévaluer `cascade-self-automation`** — Le SKILL.md référence un skill `cascade-self-automation` qui n'existe pas. Soit le créer (nouvel skill pour les automatisations projet), soit retirer définitivement la référence. À discuter.

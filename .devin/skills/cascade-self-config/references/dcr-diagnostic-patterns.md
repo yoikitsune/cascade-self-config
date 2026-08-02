@@ -6,25 +6,23 @@
 
 ## Prérequis
 
-- `dcr` est installé à `/home/julien/Sources/devin-conversations-retriever/.venv/bin/dcr`
+- `dcr` est installé globalement et accessible sur PATH (via le wrapper `~/.local/bin/dcr` créé par `devin-conversations-retriever/scripts/install-skills.sh`). Chemin de fallback : `/home/julien/Sources/devin-conversations-retriever/.venv/bin/dcr`
 - La DB est à `~/.local/share/dcr/dcr.db`
-- Si la DB n'existe pas ou est vide, lancer `dcr sync` en premier
+- **Auto-sync** : toutes les commandes `dcr` font un sync automatique avant de s'exécuter (sauf `--no-sync`). Ne **pas** lancer `dcr sync` manuellement avant une autre commande — c'est redondant. Si la DB n'existe pas, la première commande la créera automatiquement.
 
 ## Pattern 1 — Analyser une conversation spécifique
 
 **Quand** : l'utilisateur fournit une conversation à analyser (mode explicite ou libre).
 
 ```bash
-# 1. Sync pour s'assurer que la conversation est dans la DB
-dcr sync
-
-# 2. Lister les conversations récentes pour trouver l'ID
+# 1. Lister les conversations récentes pour trouver l'ID
+#    (auto-sync s'effectue avant la commande — pas besoin de dcr sync manuel)
 dcr list -l 10
 
-# 3. Afficher la conversation complète (prefix d'ID suffisant)
+# 2. Afficher la conversation complète (prefix d'ID suffisant)
 dcr show <id_prefix>
 
-# 4. Exporter en markdown pour analyse approfondie
+# 3. Exporter en markdown pour analyse approfondie
 dcr export <id_prefix> -o /tmp/conversation-analysis.md
 ```
 
@@ -35,10 +33,7 @@ dcr export <id_prefix> -o /tmp/conversation-analysis.md
 **Quand** : l'utilisateur signale un problème récurrent ou veut identifier des patterns d'erreurs.
 
 ```bash
-# Sync d'abord
-dcr sync
-
-# Rechercher par mot-clé d'erreur
+# Rechercher par mot-clé d'erreur (auto-sync avant chaque commande)
 dcr search "command not found"
 dcr search "error: "
 dcr search "failed to"
@@ -57,9 +52,7 @@ dcr search "MCP"
 **Quand** : l'utilisateur veut comparer une session réussie avec une session échouée.
 
 ```bash
-dcr sync
-
-# Exporter les deux conversations
+# Exporter les deux conversations (auto-sync avant chaque commande)
 dcr export <id1_prefix> -o /tmp/conv1.md
 dcr export <id2_prefix> -o /tmp/conv2.md
 
@@ -71,8 +64,6 @@ dcr export <id2_prefix> -o /tmp/conv2.md
 **Quand** : Cascade a utilisé le mauvais outil (MCP au lieu de CLI, navigateur au lieu de script, etc.).
 
 ```bash
-dcr sync
-
 # Chercher les mentions d'outils dans les conversations
 dcr search "MCP"
 dcr search "browser_navigate"
@@ -89,8 +80,6 @@ dcr show <id_prefix>
 **Quand** : Cascade a fait trop d'étapes pour une tâche simple.
 
 ```bash
-dcr sync
-
 # Exporter la conversation
 dcr export <id_prefix> -o /tmp/conv.md
 
@@ -105,7 +94,6 @@ dcr export <id_prefix> -o /tmp/conv.md
 **Quand** : avant de créer une nouvelle correction, vérifier si le même pattern d'erreur existe dans d'autres conversations.
 
 ```bash
-dcr sync
 
 # Rechercher le pattern d'erreur
 dcr search "<pattern_specifique>"
@@ -145,6 +133,6 @@ Markdown structuré :
 ## Limites et fallbacks
 
 - Si `dcr` n'est pas installé ou la DB est vide → fallback sur `trajectory_search`
-- Si la conversation recherchée n'est pas dans la DB → lancer `dcr sync` puis réessayer
+- Si la conversation recherchée n'est pas dans la DB → l'auto-sync l'ajoutera à la prochaine commande `dcr` (pas besoin de `dcr sync` manuel)
 - Si la conversation a été supprimée par Windsurf mais est dans la DB → `dcr show` fonctionne (archive permanente)
 - `dcr search` ne fait pas de recherche sémantique (FTS5 keyword only) — pour une recherche sémantique, utiliser `trajectory_search` en complément

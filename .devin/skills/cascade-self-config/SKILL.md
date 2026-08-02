@@ -11,19 +11,32 @@ Permettre à Cascade d'**analyser et d'améliorer son propre comportement** en m
 
 ## Architecture hybride de ce skill
 
-Ce skill est installé **globalement** dans le dossier des skills utilisateur. Le chemin dépend de l'OS :
-- **Linux/macOS** : `~/.codeium/windsurf/skills/cascade-self-config/`
-- **Windows** : `%USERPROFILE%\.codeium\windsurf\skills\cascade-self-config\` (ex: `C:\Users\<username>\.codeium\windsurf\skills\cascade-self-config\`)
+Ce skill est distribué globalement via **symlink** (per ADR-0001, adoptant ADR-0007 du projet `devin-conversations-retriever`). La source canonique est dans ce repo à `.devin/skills/cascade-self-config/`, et l'installation globale crée un lien symbolique :
 
-Il contient :
+- **Linux/macOS** : `~/.codeium/windsurf/skills/cascade-self-config` → `<repo>/.devin/skills/cascade-self-config/` (via `scripts/install-skills.sh`)
+- **Windows** : `%USERPROFILE%\.codeium\windsurf\skills\cascade-self-config` → `<repo>\.devin\skills\cascade-self-config\` (junction via `scripts/install-skills.ps1`)
+
+**Avantages du modèle symlink** :
+- **Updates live** — éditer `SKILL.md` dans le repo se propage immédiatement à toutes les sessions. `git pull` est le mécanisme de mise à jour.
+- **Pas de drift** — une seule source de vérité (le repo), pas de copie à synchroniser manuellement.
+- **Désinstallation propre** — `./scripts/install-skills.sh --remove` supprime uniquement le symlink, le repo est intact.
+
+Le skill contient :
 - Le `SKILL.md` (procédure, identique pour tous les projets)
-- Des **références génériques** (guides rules/skills/agents-md) dans `references/`
+- Des **références génériques** (guides rules/skills/agents-md, patterns dcr) dans `references/`
 
 À chaque invocation dans un projet, il utilise/crée des **références projet-spécifiques** dans `<projet>/.devin/skills/cascade-self-config/references/` :
 - `diagnostic-catalog.md` — catalogue des erreurs diagnostiquées pour ce projet
 - `project-tooling.md` — outils CLI, MCP, navigateur spécifiques à ce projet
 
 Ces fichiers projet permettent de accumuler de la mémoire par projet sans polluer les autres.
+
+## Prérequis
+
+- **`dcr` (Devin Conversations Retriever)** doit être installé globalement. Ce skill dépend fortement de l'analyse des conversations pour fonctionner correctement — la Phase 1 entière est construite autour de `dcr`.
+  - Installation : `devin-conversations-retriever/scripts/install-skills.sh` (crée le wrapper `~/.local/bin/dcr` + le skill `dcr-conversation` global)
+  - Vérifier : `dcr status` (depuis n'importe quel répertoire)
+  - Si `dcr` n'est pas disponible, le skill tombe sur le fallback `trajectory_search` (moins puissant : pas de FTS5, pas de filtres projet/date, pas d'export, pas d'archive permanente)
 
 ## Quand utiliser ce skill
 
@@ -39,7 +52,6 @@ Ces fichiers projet permettent de accumuler de la mémoire par projet sans pollu
 - ❌ Ce skill **n'est pas** un outil de résumé de conversation
 - ❌ Ce skill **n'est pas** un outil de recommandations projet (logging, code, architecture)
 - ❌ Ce skill **ne demande pas** à l'utilisateur quoi faire — il diagnostique, propose, puis agit après validation
-- ❌ Ce skill **n'est pas** pour créer de nouvelles automatisations projet → utiliser `@cascade-self-automation` à la place
 - ✅ Ce skill analyse **le comportement de Cascade lui-même** (erreurs ou améliorations) et crée des corrections dans `.devin/`
 
 > Si tu te surprends à résumer la conversation ou à donner des recommandations sur le projet, **tu es hors-sujet**. Reviens au diagnostic du comportement de Cascade.
@@ -107,7 +119,7 @@ Après la Phase 0, vérifier que les fichiers projet-spécifiques existent :
 
 1. **Analyser la conversation source** : Utiliser `dcr` (Devin Conversations Retriever) pour récupérer et analyser la conversation. Consulter `references/dcr-diagnostic-patterns.md` pour les procédures détaillées. Adapter selon le mode :
    - **Mode explicite** : l'utilisateur a décrit le problème ou l'amélioration souhaitée → `dcr search "<mot-clé>"` pour recherche ciblée, puis `dcr show <id>` pour la conversation complète
-   - **Mode libre** : l'utilisateur n'a rien décrit → `dcr sync` puis `dcr list -l 10` pour identifier la conversation, puis `dcr show <id>` ou `dcr export <id>` pour parcours systématique et identification de toutes les anomalies (commandes échouées, mauvais outils utilisés, prérequis manquants, étapes gaspillées, méthodes sous-optimales)
+   - **Mode libre** : l'utilisateur n'a rien décrit → `dcr list -l 10` pour identifier la conversation (auto-sync avant la commande), puis `dcr show <id>` ou `dcr export <id>` pour parcours systématique et identification de toutes les anomalies (commandes échouées, mauvais outils utilisés, prérequis manquants, étapes gaspillées, méthodes sous-optimales)
    - **Fallback** : si `dcr` n'est pas disponible ou la conversation n'est pas dans la DB, utiliser `trajectory_search`
 
 2. **Consulter le catalogue projet** : Lire `diagnostic-catalog.md` (projet) pour vérifier si des erreurs similaires ont déjà été diagnostiquées et corrigées. Éviter de recréer une correction existante.
@@ -342,10 +354,3 @@ Consulter `<projet>/.devin/skills/cascade-self-config/references/project-tooling
 |---|---|
 | `references/project-tooling-template.md` | Template pour créer `project-tooling.md` dans un nouveau projet |
 | `references/diagnostic-catalog-template.md` | Template pour créer `diagnostic-catalog.md` dans un nouveau projet |
-
-## Différence avec cascade-self-automation
-
-- **cascade-self-config** : Modifier comment **Cascade lui-même** fonctionne — corriger des erreurs de comportement ou adopter de meilleures pratiques. Artifacts : rules, mises à jour de skills/AGENTS existants. Déclencheur : analyse d'une conversation ou signalement utilisateur.
-- **cascade-self-automation** : Créer de **nouvelles** automatisations pour des **tâches du projet** (nouveaux skills, workflows, scripts). Déclencheur : demande directe d'automatisation d'une tâche.
-
-En résumé : `self-config` = "change la façon dont **tu** travailles" / `self-automation` = "crée un outil pour **le projet**"

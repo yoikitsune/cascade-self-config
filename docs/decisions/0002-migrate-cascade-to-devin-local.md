@@ -32,6 +32,8 @@ Avant cette migration, ce projet (`cascade-self-config`) était dans un état ob
 - Commit message convention : `chore(cascade-config)` → `chore(devin-config)`
 
 > **Note** : Le repo GitHub (`yoikitsune/cascade-self-config`) et le répertoire local (`/home/julien/Sources/cascade-self-config`) gardent leur nom historique pour l'instant. Le renommage du repo GitHub est noté dans `TODO.md` comme tâche différée.
+>
+> **Amendement (2026-08-03)** : Le repo GitHub a été renommé en `yoikitsune/devin-self-config` et le dossier local en `/home/julien/Sources/devin-self-config`. Voir `TODO.md`.
 
 ### 2. Migration du chemin d'installation global
 

@@ -14,4 +14,4 @@
 
 - [ ] **Réévaluer `devin-self-automation`** — L'ancienne référence à `cascade-self-automation` (skill inexistant) a été renommée conceptuellement en `devin-self-automation` lors de la migration. Soit le créer (nouvel skill pour les automatisations projet), soit retirer définitivement la référence. À discuter.
 - [ ] **Explorer les subagents Devin Local** — Devin Local supporte les subagents (foreground/background). Le skill pourrait potentiellement utiliser des subagents pour paralléliser l'analyse en Phase 1. À évaluer.
-- [ ] **Renommer le repo GitHub** — Le remote est actuellement `https://github.com/yoikitsune/cascade-self-config.git`. À renommer en `devin-self-config` via `gh repo rename` (ou manuellement sur GitHub). Mettre à jour le remote local avec `git remote set-url origin`.
+- [x] **Renommer le repo GitHub** — ✅ Fait. Le remote est maintenant `https://github.com/yoikitsune/devin-self-config.git` et le dossier local est `/home/julien/Sources/devin-self-config`.

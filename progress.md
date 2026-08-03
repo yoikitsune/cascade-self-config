@@ -1,13 +1,14 @@
 # Progress — devin-self-config
 
-> Dernière mise à jour : 2026-08-02 (ADR-0002 — migration Cascade → Devin Local)
+> Dernière mise à jour : 2026-08-03 (ADR-0003 — mémoire projet dans `.devin/memory/`)
 
-## Current Phase: Migration Cascade → Devin Local
+## Current Phase: Stabilisation post-migration
 
-Le 2 juin 2026, Windsurf est devenu Devin Desktop. Le 1er juillet 2026, Cascade (l'agent local) a atteint son end-of-life et a été remplacé par Devin Local (réécrit en Rust, plus token-efficient, support des subagents). Ce projet, nommé `cascade-self-config`, a été renommé `devin-self-config` et migré vers les nouveaux chemins d'installation.
+Le projet a migré de Cascade vers Devin Local (ADR-0002) puis a déplacé la mémoire projet vers `.devin/memory/` (ADR-0003). Toutes les phases actives sont terminées.
 
 ## Ce qui est fait
 
+- [x] **ADR-0003 — Mémoire projet dans `.devin/memory/`** : SKILL.md mis à jour (Phase 0b avec migration automatique, tous les chemins mis à jour), ADR créé. La migration des fichiers existants dans les projets utilisateurs se fera automatiquement à la prochaine invocation du skill (Phase 0b).
 - [x] **ADR-0002 — Migration Cascade → Devin Local** : renommage du skill `cascade-self-config` → `devin-self-config`, migration du chemin global `~/.codeium/windsurf/skills/` → `~/.config/devin/skills/` (XDG), scripts mis à jour avec cleanup automatique des anciens chemins, SKILL.md réécrit (Cascade → Devin Local, 4 URLs de doc au lieu de 3, doc Devin Local ajoutée), toutes les références et la doc mises à jour
 - [x] **Phase 2 — Documentation projet** : `AGENTS.md`, `docs/index.md`, `docs/decisions/0001-adopt-adr-0007-symlink-distribution.md`, `progress.md` créés, `TODO.md` nettoyé
 - [x] **Phase 1 — Restructuration selon ADR-0007** : skill déplacé dans `.devin/skills/devin-self-config/`, `scripts/install-skills.{sh,ps1}` créés, `global_rules.md` supprimé, installation globale migrée (copie stale → symlink validé)
@@ -18,11 +19,11 @@ Le 2 juin 2026, Windsurf est devenu Devin Desktop. Le 1er juillet 2026, Cascade 
 
 ## Ce qui est en cours
 
-Rien — toutes les phases de la migration ADR-0002 sont terminées.
+Rien — toutes les phases sont terminées.
 
 ## Ce qui est prévu
 
-Rien — toutes les phases de la migration ADR-0002 sont terminées.
+Rien — toutes les phases sont terminées.
 
 ## Ce qui est bloqué
 
@@ -43,3 +44,4 @@ Rien actuellement bloqué.
 |---|---|---|
 | [ADR-0001](docs/decisions/0001-adopt-adr-0007-symlink-distribution.md) | Adoption d'ADR-0007 (distribution par symlinks) | Accepted |
 | [ADR-0002](docs/decisions/0002-migrate-cascade-to-devin-local.md) | Migration Cascade → Devin Local (renommage + chemins) | Accepted |
+| [ADR-0003](docs/decisions/0003-memory-in-devin-memory.md) | Mémoire projet dans `.devin/memory/` au lieu de `.devin/skills/` | Accepted |

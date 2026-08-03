@@ -33,7 +33,8 @@ Sur Windows : `.\scripts\install-skills.ps1` (junctions, pas besoin d'admin).
 │   ├── index.md           # Routeur de documentation
 │   └── decisions/         # Architecture Decision Records (ADR)
 │       ├── 0001-adopt-adr-0007-symlink-distribution.md
-│       └── 0002-migrate-cascade-to-devin-local.md
+│       ├── 0002-migrate-cascade-to-devin-local.md
+│       └── 0003-memory-in-devin-memory.md
 ├── progress.md            # Tableau de bord vivant
 ├── TODO.md                # Tâches différées (hors scope courant)
 ├── scripts/
@@ -42,7 +43,7 @@ Sur Windows : `.\scripts\install-skills.ps1` (junctions, pas besoin d'admin).
 └── .devin/
     └── skills/
         └── devin-self-config/
-            ├── SKILL.md    # Procédure du skill (357 lignes)
+            ├── SKILL.md    # Procédure du skill (369 lignes)
             └── references/ # Guides génériques + patterns dcr + templates
                 ├── agents-md-guide.md
                 ├── dcr-diagnostic-patterns.md
@@ -57,7 +58,7 @@ Sur Windows : `.\scripts\install-skills.ps1` (junctions, pas besoin d'admin).
 - Le skill vit dans `.devin/skills/devin-self-config/` (source canonique versionnée)
 - L'installation globale crée un symlink depuis `~/.config/devin/skills/devin-self-config` vers le repo
 - Les `references/` génériques (guides rules/skills/agents-md) sont partagées entre tous les projets
-- Les `references/` projet-spécifiques (`diagnostic-catalog.md`, `project-tooling.md`) vivent dans `<projet>/.devin/skills/devin-self-config/references/` — pas dans ce repo
+- Les fichiers de mémoire projet-spécifiques (`diagnostic-catalog.md`, `project-tooling.md`) vivent dans `<projet>/.devin/memory/devin-self-config/` (per ADR-0003) — pas dans ce repo
 - **Pas de global rule** — l'awareness est porté par la description tier-1 du skill (per ADR-0001)
 - Les scripts d'installation nettoient automatiquement les anciens chemins legacy (`~/.codeium/windsurf/skills/`) per ADR-0002
 
@@ -65,7 +66,7 @@ Sur Windows : `.\scripts\install-skills.ps1` (junctions, pas besoin d'admin).
 
 - Ne pas créer de `global_rules.md` — obsolète per ADR-0001 (l'awareness vient du skill)
 - Ne pas copier le skill manuellement dans `~/.config/devin/skills/` — utiliser `scripts/install-skills.sh` (sinon drift)
-- Ne pas committer de références projet-spécifiques dans ce repo — elles appartiennent aux projets utilisateurs
+- Ne pas committer de fichiers de mémoire projet-spécifiques dans ce repo — ils appartiennent aux projets utilisateurs
 - Ne pas introduire de code applicatif — ce repo ne contient que des artifacts de configuration
 - Ne pas installer dans l'ancien chemin `~/.codeium/windsurf/skills/` — obsolète per ADR-0002 (les scripts nettoient ce chemin automatiquement)
 

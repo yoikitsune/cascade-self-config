@@ -25,11 +25,11 @@ Le skill contient :
 - Le `SKILL.md` (procédure, identique pour tous les projets)
 - Des **références génériques** (guides rules/skills/agents-md, patterns dcr) dans `references/`
 
-À chaque invocation dans un projet, il utilise/crée des **références projet-spécifiques** dans `<projet>/.devin/skills/devin-self-config/references/` :
+À chaque invocation dans un projet, il utilise/crée des **fichiers de mémoire projet-spécifiques** dans `<projet>/.devin/memory/devin-self-config/` (per ADR-0003) :
 - `diagnostic-catalog.md` — catalogue des erreurs diagnostiquées pour ce projet
 - `project-tooling.md` — outils CLI, MCP, navigateur spécifiques à ce projet
 
-Ces fichiers projet permettent de accumuler de la mémoire par projet sans polluer les autres.
+Ces fichiers projet permettent d'accumuler de la mémoire par projet sans polluer les autres. Ils vivent dans `.devin/memory/` (état accumulé) et non dans `.devin/skills/` (réservé aux définitions de skills).
 
 ## Prérequis
 
@@ -72,7 +72,7 @@ Le déroulement attendu est :
 
 ```
 Phase 0  → lire la doc officielle (PREMIÈRE ACTION, avant toute analyse)
-Phase 0b → vérifier/créer les références projet-spécifiques
+Phase 0b → vérifier/migrer la mémoire projet-spécifique
 Phase 1  → dcr (conversation retriever) sur la conversation + diagnostic des erreurs
 Phase 2  → choix d'artifact pour chaque correction
 Phase 3  → création/modification des artifacts
@@ -97,22 +97,57 @@ Utiliser `read_url_content` pour chaque lien. Si une page n'est pas accessible o
 
 > **Pourquoi cette étape** : La documentation officielle peut évoluer. Les références locales dans `references/` sont un résumé, mais la source de vérité est la doc en ligne. Cette lecture garantit que les artifacts créés respectent les conventions actuelles.
 
-## Phase 0b — Vérification des références projet-spécifiques
+## Phase 0b — Vérification de la mémoire projet-spécifique
 
-Après la Phase 0, vérifier que les fichiers projet-spécifiques existent :
+Après la Phase 0, vérifier et migrer si nécessaire les fichiers de mémoire projet :
 
-1. **Chercher** `<projet>/.devin/skills/devin-self-config/references/diagnostic-catalog.md`
+### Étape 1 — Migration des anciens emplacements (per ADR-0003)
+
+Avant toute chose, détecter et migrer les fichiers stockés à d'anciens emplacements :
+
+1. **Chercher les anciens chemins** (dans l'ordre) :
+   - `<projet>/.devin/skills/cascade-self-config/references/diagnostic-catalog.md`
+   - `<projet>/.devin/skills/cascade-self-config/references/project-tooling.md`
+   - `<projet>/.devin/skills/devin-self-config/references/diagnostic-catalog.md`
+   - `<projet>/.devin/skills/devin-self-config/references/project-tooling.md`
+
+2. **Si des fichiers sont trouvés à un ancien chemin** :
+   - Créer `<projet>/.devin/memory/devin-self-config/` si nécessaire
+   - Pour chaque fichier trouvé à un ancien chemin :
+     - Si le fichier n'existe pas encore au nouvel emplacement → le déplacer
+     - Si le fichier existe déjà au nouvel emplacement → comparer les dates de modification. Garder le plus récent, supprimer l'ancien. Si l'ancien est plus récent (cas rare), avertir l'utilisateur avant d'écraser
+   - Supprimer les dossiers `references/` vides après migration
+   - Supprimer les dossiers `cascade-self-config/` ou `devin-self-config/` vides dans `.devin/skills/` après migration
+   - Signaler la migration à l'utilisateur dans le rapport de diagnostic (Phase 4a)
+
+### Étape 1b — Suppression des copies locales obsolètes du skill
+
+Après la migration des fichiers de mémoire, vérifier si une copie locale obsolète du skill existe dans le projet :
+
+1. **Chercher** `<projet>/.devin/skills/cascade-self-config/SKILL.md`
+   - Si trouvé → c'est une copie locale obsolète (le skill est maintenant distribué globalement via symlink, per ADR-0001). La supprimer après s'être assuré que les fichiers de mémoire ont été migrés (Étape 1)
+   - Supprimer tout le dossier `<projet>/.devin/skills/cascade-self-config/` s'il est vide après migration
+
+2. **Chercher** `<projet>/.devin/skills/devin-self-config/SKILL.md`
+   - Si trouvé ET que ce n'est pas un symlink → c'est aussi une copie locale obsolète. Procéder comme ci-dessus
+   - Si c'est un symlink → c'est l'installation globale, ne pas toucher
+
+> **Attention** : Ne jamais supprimer un dossier sans avoir d'abord vérifié que les fichiers de mémoire (`diagnostic-catalog.md`, `project-tooling.md`) ont été migrés. Si des fichiers non reconnus sont présents, les signaler à l'utilisateur plutôt que de les supprimer.
+
+### Étape 2 — Vérification/création des fichiers de mémoire
+
+1. **Chercher** `<projet>/.devin/memory/devin-self-config/diagnostic-catalog.md`
    - Si absent → le créer depuis le template global `references/diagnostic-catalog-template.md`
    - Si présent → le lire pour connaître les erreurs déjà diagnostiquées dans ce projet
 
-2. **Chercher** `<projet>/.devin/skills/devin-self-config/references/project-tooling.md`
+2. **Chercher** `<projet>/.devin/memory/devin-self-config/project-tooling.md`
    - Si absent → le créer depuis le template global `references/project-tooling-template.md`
    - Si présent → le lire pour connaître les outils et limites de ce projet
 
 3. **Chercher** `<projet>/.devin/AGENTS.md`
    - Si présent → le lire pour connaître l'inventaire des rules/skills/workflows existants
 
-> **Note** : Les références génériques (`rules-guide.md`, `skills-guide.md`, `agents-md-guide.md`) sont dans le répertoire global du skill et toujours disponibles. Seuls les fichiers projet-spécifiques need d'être vérifiés.
+> **Note** : Les références génériques (`rules-guide.md`, `skills-guide.md`, `agents-md-guide.md`) sont dans le répertoire global du skill et toujours disponibles. Seuls les fichiers de mémoire projet-spécifiques nécessitent une vérification.
 
 ## Procédure
 
@@ -148,6 +183,7 @@ Après la Phase 0, vérifier que les fichiers projet-spécifiques existent :
    - `process-gap` : Mauvaise anticipation d'un flux ou d'une intégration
    - `efficiency` : Méthode fonctionnelle mais sous-optimale (trop d'étapes, outil suboptimal)
    - `practice-adoption` : Nouvelle pratique à systématiser
+   - `security` : Problème de sécurité (secret committé, commande insecure, permission excessive)
 
 6. **Déterminer la correction** : Quelle connaissance aurait évité cette erreur ou rendu cette amélioration automatique ?
 
@@ -185,7 +221,7 @@ La correction est-elle une contrainte comportementale courte ?
    - `references/skills-guide.md` — structure, progressive disclosure, best practices
    - `references/agents-md-guide.md` — scoping et format AGENTS.md
 
-2. **Consulter les références projet** (dans `<projet>/.devin/skills/devin-self-config/references/`) :
+2. **Consulter la mémoire projet** (dans `<projet>/.devin/memory/devin-self-config/`) :
    - `project-tooling.md` — outils disponibles et leurs limites pour ce projet
    - `diagnostic-catalog.md` — erreurs déjà diagnostiquées dans ce projet
 
@@ -258,7 +294,7 @@ Après validation explicite de l'utilisateur :
    - Si nouvelle rule → ajouter à `.devin/AGENTS.md` (section Inventory des Rules)
    - Si nouveau workflow → ajouter à `.devin/AGENTS.md` (section Inventory des Workflows)
 
-5. **Mettre à jour le catalogue projet** : Ajouter les nouvelles entrées ERR-XXX dans `<projet>/.devin/skills/devin-self-config/references/diagnostic-catalog.md`
+5. **Mettre à jour le catalogue projet** : Ajouter les nouvelles entrées ERR-XXX dans `<projet>/.devin/memory/devin-self-config/diagnostic-catalog.md`
 
 6. **Présenter le rapport de validation** :
    ```
@@ -285,7 +321,7 @@ Après validation explicite de l'utilisateur :
    - Skills (`.devin/skills/*/SKILL.md` et `references/`)
    - Workflows (`.devin/workflows/*.md`)
    - AGENTS.md (`.devin/AGENTS.md`)
-   - References projet de devin-self-config
+   - Mémoire projet (`.devin/memory/devin-self-config/`)
 2. **Ne jamais commiter** des fichiers de code applicatif (`lib/`, `functions/`, `test/`, etc.) dans ce workflow
 3. **Message de commit** : `chore(devin-config): [description courte de la correction]`
 4. **Un seul commit** regroupant toutes les modifications de config liées à cette session
@@ -293,7 +329,7 @@ Après validation explicite de l'utilisateur :
 ## Checklist avant de répondre à l'utilisateur
 
 - [ ] J'ai lu les 4 URLs de documentation (Phase 0) — **avant toute autre action**
-- [ ] J'ai vérifié/créé les références projet-spécifiques (Phase 0b)
+- [ ] J'ai vérifié/migré la mémoire projet-spécifique (Phase 0b)
 - [ ] J'ai utilisé `dcr` (ou `trajectory_search` en fallback) pour analyser la conversation source (Phase 1)
 - [ ] J'ai identifié chaque erreur de Devin Local dans la conversation
 - [ ] J'ai catégorisé chaque erreur (cli-syntax, tool-selection, etc.)
@@ -309,7 +345,7 @@ Si une case n'est pas cochée, **ne réponds pas encore** — complète l'étape
 
 > **Bon comportement** :
 > 1. Lit les 4 URLs de doc (Phase 0)
-> 2. Vérifie/crée les références projet (Phase 0b)
+> 2. Vérifie/crée la mémoire projet (Phase 0b)
 > 3. `dcr show` / `dcr export` sur la conversation (Phase 1) — voir `references/dcr-diagnostic-patterns.md`
 > 4. "J'ai identifié 3 erreurs : ERR-A (process-gap), ERR-B (missing-prerequisite), ERR-C (cli-syntax)"
 > 5. Propose des corrections (Phase 2) → présente le rapport de diagnostic (Phase 4a)
@@ -323,14 +359,6 @@ Si une case n'est pas cochée, **ne réponds pas encore** — complète l'étape
 > 4. Demande "Quelles actions veux-tu que je mette en œuvre ?" au lieu de proposer un diagnostic
 > 5. Crée des artifacts sans validation utilisateur
 
-## Catalogue d'erreurs connues
-
-Consulter `<projet>/.devin/skills/devin-self-config/references/diagnostic-catalog.md` pour le catalogue des erreurs déjà identifiées dans ce projet et leurs corrections. Ce catalogue s'enrichit à chaque utilisation du skill.
-
-## Outils disponibles pour le diagnostic
-
-Consulter `<projet>/.devin/skills/devin-self-config/references/project-tooling.md` pour la liste complète des outils disponibles (CLI, MCP, navigateur) et leurs limites connues pour ce projet.
-
 ## Fichiers de référence
 
 ### Références génériques (globales, dans le répertoire du skill)
@@ -342,7 +370,7 @@ Consulter `<projet>/.devin/skills/devin-self-config/references/project-tooling.m
 | `references/agents-md-guide.md` | Scoping, format, comparaison avec rules | Avant de créer/modifier un AGENTS.md |
 | `references/dcr-diagnostic-patterns.md` | Procédures dcr pour le diagnostic de l'agent (sync, search, show, export, compare) | Pendant la Phase 1 — diagnostic de conversation |
 
-### Références projet-spécifiques (dans `<projet>/.devin/skills/devin-self-config/references/`)
+### Mémoire projet-spécifique (dans `<projet>/.devin/memory/devin-self-config/`)
 
 | Fichier | Contenu | Quand le charger |
 |---|---|---|

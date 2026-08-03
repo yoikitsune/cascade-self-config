@@ -1,6 +1,6 @@
-# Patterns diagnostiques avec `dcr` — cascade-self-config
+# Patterns diagnostiques avec `dcr` — devin-self-config
 
-> Ce fichier contient les procédures spécifiques pour utiliser `dcr` dans le contexte du diagnostic de comportement Cascade. Il est chargé par le skill `cascade-self-config` lors de la Phase 1.
+> Ce fichier contient les procédures spécifiques pour utiliser `dcr` dans le contexte du diagnostic de comportement de Devin Local. Il est chargé par le skill `devin-self-config` lors de la Phase 1.
 >
 > Pour la documentation générique de `dcr`, utiliser `dcr --help` ou consulter `/home/julien/Sources/devin-conversations-retriever/README.md`.
 
@@ -61,7 +61,7 @@ dcr export <id2_prefix> -o /tmp/conv2.md
 
 ## Pattern 4 — Diagnostiquer un problème de sélection d'outil
 
-**Quand** : Cascade a utilisé le mauvais outil (MCP au lieu de CLI, navigateur au lieu de script, etc.).
+**Quand** : Devin Local a utilisé le mauvais outil (MCP au lieu de CLI, navigateur au lieu de script, etc.).
 
 ```bash
 # Chercher les mentions d'outils dans les conversations
@@ -77,7 +77,7 @@ dcr show <id_prefix>
 
 ## Pattern 5 — Identifier des étapes gaspillées
 
-**Quand** : Cascade a fait trop d'étapes pour une tâche simple.
+**Quand** : Devin Local a fait trop d'étapes pour une tâche simple.
 
 ```bash
 # Exporter la conversation

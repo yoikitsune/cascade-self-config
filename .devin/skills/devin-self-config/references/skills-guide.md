@@ -1,4 +1,4 @@
-# Guide des Skills Cascade
+# Guide des Skills Devin Local
 
 ## Structure
 
@@ -45,9 +45,10 @@ description: Brief explanation shown to the model to help it decide when to invo
 - `.claude/skills/`
 
 ### Skills globaux (utilisateur)
-- `~/.codeium/windsurf/skills/` (emplacement recommandé)
-- `~/.agents/skills/`
-- `~/.claude/skills/`
+- `~/.config/devin/skills/` (emplacement canonique XDG, per ADR-0002)
+- `~/.agents/skills/` (standard cross-agent)
+- `~/.claude/skills/` (compatibilité Claude Code)
+- `~/.codeium/windsurf/skills/` (legacy, Cascade-era — déprécié)
 
 ### Skills système (Enterprise)
 - macOS : `/Library/Application Support/Windsurf/skills/`
@@ -57,7 +58,7 @@ description: Brief explanation shown to the model to help it decide when to invo
 ## Invocation des skills
 
 ### Invocation automatique
-Cascade décide d'invoquer un skill en fonction de sa `description`. Une description claire et spécifique est essentielle.
+Devin Local décide d'invoquer un skill en fonction de sa `description`. Une description claire et spécifique est essentielle.
 
 ### Invocation manuelle
 L'utilisateur peut invoquer un skill avec `@skill-name`.
@@ -66,7 +67,7 @@ L'utilisateur peut invoquer un skill avec `@skill-name`.
 
 Les skills doivent suivre le principe de "progressive disclosure" :
 
-1. **Description claire** dans le frontmatter pour que Cascade sache quand invoquer le skill
+1. **Description claire** dans le frontmatter pour que Devin Local sache quand invoquer le skill
 2. **Section "Quand utiliser ce skill"** explicite dans le contenu
 3. **Procédure structurée** avec des étapes claires
 4. **Références optionnelles** dans `references/` pour les détails complexes
@@ -92,7 +93,7 @@ Follow these steps to deploy safely...
 
 ## Best practices (documentation officielle)
 
-1. **Descriptions claires** : La description aide Cascade à décider quand invoquer le skill. Être spécifique sur ce que le skill fait et quand l'utiliser.
+1. **Descriptions claires** : La description aide Devin Local à décider quand invoquer le skill. Être spécifique sur ce que le skill fait et quand l'utiliser.
 2. **Inclure des ressources pertinentes** : Templates, checklists, et exemples rendent les skills plus utiles.
 3. **Noms descriptifs** : `deploy-to-staging` est meilleur que `deploy1`. Les noms doivent indiquer clairement ce que le skill fait.
 

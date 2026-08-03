@@ -1,4 +1,4 @@
-# Guide des Rules Cascade
+# Guide des Rules Devin Local
 
 ## Syntaxe
 
@@ -16,7 +16,7 @@ description: Description du contexte (requis pour model_decision/glob)
 | Trigger | Quand s'applique | Usage typique |
 |---|---|---|
 | `always_on` | Toujours chargé dans le contexte | Erreurs critiques qui peuvent survenir à tout moment sans signal contextuel |
-| `model_decision` | Cascade décide quand charger en fonction du contexte | Préférence par défaut pour économiser le contexte |
+| `model_decision` | Devin Local décide quand charger en fonction du contexte | Préférence par défaut pour économiser le contexte |
 | `glob` | S'applique uniquement aux fichiers correspondant au pattern | Règles spécifiques à certains types de fichiers |
 | `manual` | Jamais chargé automatiquement, invocation explicite via @rule-name | Documentation ou procédures rarement utilisées |
 
@@ -41,7 +41,7 @@ Patterns valides : `*.js`, `src/**/*.ts`, `**/*.test.ts`, etc.
 - `.windsurf/rules/*.md` (legacy, déprécié)
 
 ### Rules globales (utilisateur)
-- `~/.codeium/windsurf/memories/global_rules.md` (fichier unique)
+- `~/.codeium/windsurf/memories/global_rules.md` (fichier unique — chemin legacy, toujours lu par Devin Desktop)
 - Via l'UI : Customizations → Edit → Rules → + Global
 
 ### Rules système (Enterprise)
@@ -89,8 +89,8 @@ Dans les fichiers Dart, utiliser uniquement les imports absolus `package:project
 
 ## Best practices (documentation officielle)
 
-- **Garder les rules simples, concises et spécifiques**. Les rules trop longues ou vagues peuvent confondre Cascade.
-- **Pas de règles génériques** (ex: "write good code") — déjà dans le training data de Cascade.
+- **Garder les rules simples, concises et spécifiques**. Les rules trop longues ou vagues peuvent confondre Devin Local.
+- **Pas de règles génériques** (ex: "write good code") — déjà dans le training data de Devin Local.
 - **Formater avec bullet points, numbered lists, et markdown** — plus facile à suivre qu'un long paragraphe.
 - **XML tags pour grouper des règles similaires** :
 

@@ -2,7 +2,7 @@
 
 ## Qu'est-ce que AGENTS.md ?
 
-`AGENTS.md` est un fichier markdown (sans frontmatter) qui fournit un contexte permanent à Cascade pour un répertoire spécifique. Il est chargé automatiquement quand Cascade travaille dans ce répertoire.
+`AGENTS.md` est un fichier markdown (sans frontmatter) qui fournit un contexte permanent à Devin Local pour un répertoire spécifique. Il est chargé automatiquement quand Devin Local travaille dans ce répertoire.
 
 ## Discovery et Scoping
 
@@ -12,8 +12,8 @@
 - **Case insensitive** : `AGENTS.md` et `agents.md` sont tous deux reconnus
 
 ### Scoping automatique
-- **Racine du projet** : `AGENTS.md` à la racine = traité comme une rule `always_on` — le contenu complet est inclus dans le system prompt de Cascade à chaque message
-- **Sous-répertoires** : `AGENTS.md` dans un sous-répertoire = traité comme une rule `glob` avec pattern auto-généré `<directory>/**` — le contenu s'applique uniquement quand Cascade lit ou modifie des fichiers dans ce répertoire
+- **Racine du projet** : `AGENTS.md` à la racine = traité comme une rule `always_on` — le contenu complet est inclus dans le system prompt de Devin Local à chaque message
+- **Sous-répertoires** : `AGENTS.md` dans un sous-répertoire = traité comme une rule `glob` avec pattern auto-généré `<directory>/**` — le contenu s'applique uniquement quand Devin Local lit ou modifie des fichiers dans ce répertoire
 - Les AGENTS.md locaux **s'additionnent** au global (pas de remplacement)
 
 ## Format
@@ -23,7 +23,7 @@ Markdown simple, **pas de frontmatter YAML**. Structure typique :
 ```markdown
 # Contexte Permanent pour [répertoire]
 
-> Ce fichier est chargé en permanence dans le contexte de Cascade pour ce répertoire.
+> Ce fichier est chargé en permanence dans le contexte de Devin Local pour ce répertoire.
 
 ## Règles Absolues
 1. Règle 1
@@ -46,7 +46,7 @@ Markdown simple, **pas de frontmatter YAML**. Structure typique :
 ## Best practices (documentation officielle)
 
 - **Instructions focalisées** : Chaque AGENTS.md doit contenir des instructions pertinentes pour le purpose de son répertoire
-- **Formatage clair** : Bullet points, headers, et code blocks rendent les instructions plus faciles à suivre pour Cascade
+- **Formatage clair** : Bullet points, headers, et code blocks rendent les instructions plus faciles à suivre pour Devin Local
 - **Être spécifique** : Des exemples concrets et des conventions explicites fonctionnent mieux que des guidelines vagues
 - **Éviter la redondance** : Ne pas répéter les instructions globales dans les fichiers de sous-répertoire — ils héritent des parents
 

@@ -1,6 +1,6 @@
 # Outils disponibles pour ce projet — Capacités et Limites
 
-> Ce fichier est projet-spécifique. Il est créé automatiquement par le skill `cascade-self-config` lors de la première invocation dans un projet. Adaptez-le avec les outils de votre projet.
+> Ce fichier est projet-spécifique. Il est créé automatiquement par le skill `devin-self-config` lors de la première invocation dans un projet. Adaptez-le avec les outils de votre projet.
 
 ## CLI [Nom de l'outil]
 
@@ -41,7 +41,7 @@
 - Consulter la console avec `browser_console_messages` pour les erreurs JS
 - Vérifier le réseau avec `browser_network_requests` pour les appels API
 
-## Outils Cascade internes
+## Outils Devin Local internes
 
 | Tool | Ce qu'il fait |
 |---|---|
